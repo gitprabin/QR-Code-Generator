@@ -4,6 +4,10 @@ using ZXing.Common;
 using ZXing;
 using ZXing.QrCode;
 using System.Drawing;
+using System.Data.OleDb;
+using Microsoft.Office.Interop.Excel;
+using System.Runtime.InteropServices;
+using System.Drawing.Imaging;
 
 namespace QR_Code_Generator
 {
@@ -40,7 +44,7 @@ namespace QR_Code_Generator
             else
             {
                 var qr = new BarcodeWriter();
-                qr.Options = options;
+                qr.Options = options;               
                 qr.Format = BarcodeFormat.QR_CODE;
                 var result = new Bitmap(qr.Write(txtPlainText.Text.Trim()));
                 pictureBox1.Image = result;
@@ -96,6 +100,66 @@ namespace QR_Code_Generator
                                 (Environment.SpecialFolder.Desktop);
                 }
             }
+        }
+
+        private void btnExcel_Click(object sender, EventArgs e)
+        {
+            
+
+            OpenFileDialog open = new OpenFileDialog();
+            
+            string path = "";
+           
+            if (open.ShowDialog() == DialogResult.OK)
+            {
+                path = open.FileName;
+
+                lblExcelPath.Text = path;
+            }
+            else
+            {
+                lblExcelPath.Text = "";
+            }
+
+            Microsoft.Office.Interop.Excel.Application xlApp = new Microsoft.Office.Interop.Excel.Application();
+            Workbook xlWorkBook = xlApp.Workbooks.Open(path);
+
+            Worksheet xlWorkSheet = (Worksheet)xlWorkBook.Worksheets.get_Item(1);
+
+            Range xlRange = xlWorkSheet.UsedRange;
+            int totalRows = xlRange.Rows.Count;
+            int totalColumns = xlRange.Columns.Count;
+
+            string name, mobile, dob;
+
+            //qr code format: Name : Prabin Siwakoti, Mobile :  983737373, Dob: 2083-01-19
+
+            for (int rowCount = 2; rowCount <= totalRows; rowCount++)
+            {
+                string onlyName = Convert.ToString((xlRange.Cells[rowCount, 1] as Range).Text);
+
+                name = Convert.ToString((xlRange.Cells[1, 1] as Range).Text)+" : "+ Convert.ToString((xlRange.Cells[rowCount, 1] as Range).Text);
+                mobile = Convert.ToString((xlRange.Cells[1, 2] as Range).Text) + " : " + Convert.ToString((xlRange.Cells[rowCount, 2] as Range).Text);
+                dob = Convert.ToString((xlRange.Cells[1, 3] as Range).Text) + " : " + Convert.ToString((xlRange.Cells[rowCount, 3] as Range).Text);
+
+                string qrString = name + "\n" + mobile + "\n" + dob;
+
+                //crate qr bitmap
+                var qr = new BarcodeWriter();
+                qr.Options = options;
+                qr.Format = BarcodeFormat.QR_CODE;
+                var result = new Bitmap(qr.Write((qrString).Trim()));
+
+                result.Save(@"F:\Qr\"+onlyName+".png", ImageFormat.Png);
+            }
+
+            xlWorkBook.Close();
+            xlApp.Quit();
+
+            Marshal.ReleaseComObject(xlWorkSheet);
+            Marshal.ReleaseComObject(xlWorkBook);
+            Marshal.ReleaseComObject(xlApp);
+
         }
     }
 }
