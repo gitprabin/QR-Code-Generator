@@ -1,10 +1,13 @@
-﻿using System;
+﻿/*
+*@created By : Prabin Siwakoti
+*@created On : 2018-04-12
+*@email : developer.prabin@gmail.com
+*/
+using System;
 using System.Windows.Forms;
-using ZXing.Common;
 using ZXing;
 using ZXing.QrCode;
 using System.Drawing;
-using System.Data.OleDb;
 using Microsoft.Office.Interop.Excel;
 using System.Runtime.InteropServices;
 using System.Drawing.Imaging;
@@ -26,8 +29,9 @@ namespace QR_Code_Generator
             {
                 DisableECI = true,
                 CharacterSet = "UTF-8",
-                Width = 250,
-                Height = 250,
+                Width = 100,
+                Height = 100,
+                Margin = 1
             };
             var writer = new BarcodeWriter();
             writer.Format = BarcodeFormat.QR_CODE;
@@ -38,13 +42,13 @@ namespace QR_Code_Generator
         {
             if (String.IsNullOrWhiteSpace(txtPlainText.Text) || String.IsNullOrEmpty(txtPlainText.Text))
             {
-                pictureBox1.Image = null;
                 MessageBox.Show("Text not found", "Oops!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
+                pictureBox1.Image = null;
                 var qr = new BarcodeWriter();
-                qr.Options = options;               
+                qr.Options = options;
                 qr.Format = BarcodeFormat.QR_CODE;
                 var result = new Bitmap(qr.Write(txtPlainText.Text.Trim()));
                 pictureBox1.Image = result;
@@ -104,62 +108,107 @@ namespace QR_Code_Generator
 
         private void btnExcel_Click(object sender, EventArgs e)
         {
-            
+            btnExcel.Text = "Please Wait...";
+            btnExcel.Enabled = false;
 
+            try
+            {
+                if (String.IsNullOrWhiteSpace(txtSavePath.Text))
+                {
+                    MessageBox.Show("Please Enter Path To Save QR Codes.");
+                    btnBrowser.Focus();
+                    return;
+                }
+
+                if (String.IsNullOrWhiteSpace(txtExcelPath.Text))
+                {
+                    MessageBox.Show("Please Select Excel File.");
+                    btnExcelBrowse.Focus();
+                    return;
+                }
+
+                string path = txtExcelPath.Text;
+
+                Microsoft.Office.Interop.Excel.Application xlApp = new Microsoft.Office.Interop.Excel.Application();
+                Workbook xlWorkBook = xlApp.Workbooks.Open(path);
+
+                Worksheet xlWorkSheet = (Worksheet)xlWorkBook.Worksheets.get_Item(1);
+
+                Range xlRange = xlWorkSheet.UsedRange;
+                int totalRows = xlRange.Rows.Count;
+
+                int totalColumns = xlRange.Columns.Count;
+
+                string photoId, name, school, contact, qrString;
+
+                int i = 0;
+
+                for (int rowCount = 2; rowCount <= totalRows; rowCount++)
+                {
+                    photoId = Convert.ToString((xlRange.Cells[rowCount, 1] as Range).Text);
+
+                    name = Convert.ToString((xlRange.Cells[rowCount, 2] as Range).Text);
+
+                    school = Convert.ToString((xlRange.Cells[rowCount, 3] as Range).Text);
+
+                    contact = Convert.ToString((xlRange.Cells[rowCount, 4] as Range).Text);
+
+                    qrString = name + "," + school + "," + contact;
+
+                    if (String.IsNullOrWhiteSpace(qrString))
+                        continue;
+
+                    //crate qr bitmap
+                    var qr = new BarcodeWriter();
+                    qr.Options = options;
+                    qr.Format = BarcodeFormat.QR_CODE;
+                    var result = new Bitmap(qr.Write((qrString).Trim()));
+
+                    result.Save(txtSavePath.Text.Trim() + "\\" + photoId + ".png", ImageFormat.Png);
+                    i++;
+                }
+
+                xlWorkBook.Close();
+                xlApp.Quit();
+
+                Marshal.ReleaseComObject(xlWorkSheet);
+                Marshal.ReleaseComObject(xlWorkBook);
+                Marshal.ReleaseComObject(xlApp);
+
+                MessageBox.Show("Total " + i + " QR Codes Are Generated.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed To Generate QR Code, Please try again later, Error : " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            btnExcel.Text = "Generate && Save";
+            btnExcel.Enabled = true;
+
+        }
+
+        private void btnBrowser_Click(object sender, EventArgs e)
+        {
+            using (var folderDialog = new FolderBrowserDialog())
+            {
+                if (folderDialog.ShowDialog() == DialogResult.OK)
+                {
+                    txtSavePath.Text = folderDialog.SelectedPath;
+                }
+            }
+        }
+
+        private void btnExcelBrowse_Click(object sender, EventArgs e)
+        {
             OpenFileDialog open = new OpenFileDialog();
-            
-            string path = "";
-           
+
+            string path = txtExcelPath.Text;
+
             if (open.ShowDialog() == DialogResult.OK)
             {
-                path = open.FileName;
-
-                lblExcelPath.Text = path;
+                txtExcelPath.Text = open.FileName;
             }
-            else
-            {
-                lblExcelPath.Text = "";
-            }
-
-            Microsoft.Office.Interop.Excel.Application xlApp = new Microsoft.Office.Interop.Excel.Application();
-            Workbook xlWorkBook = xlApp.Workbooks.Open(path);
-
-            Worksheet xlWorkSheet = (Worksheet)xlWorkBook.Worksheets.get_Item(1);
-
-            Range xlRange = xlWorkSheet.UsedRange;
-            int totalRows = xlRange.Rows.Count;
-            int totalColumns = xlRange.Columns.Count;
-
-            string name, mobile, dob;
-
-            //qr code format: Name : Prabin Siwakoti, Mobile :  983737373, Dob: 2083-01-19
-
-            for (int rowCount = 2; rowCount <= totalRows; rowCount++)
-            {
-                string onlyName = Convert.ToString((xlRange.Cells[rowCount, 1] as Range).Text);
-
-                name = Convert.ToString((xlRange.Cells[1, 1] as Range).Text)+" : "+ Convert.ToString((xlRange.Cells[rowCount, 1] as Range).Text);
-                mobile = Convert.ToString((xlRange.Cells[1, 2] as Range).Text) + " : " + Convert.ToString((xlRange.Cells[rowCount, 2] as Range).Text);
-                dob = Convert.ToString((xlRange.Cells[1, 3] as Range).Text) + " : " + Convert.ToString((xlRange.Cells[rowCount, 3] as Range).Text);
-
-                string qrString = name + "\n" + mobile + "\n" + dob;
-
-                //crate qr bitmap
-                var qr = new BarcodeWriter();
-                qr.Options = options;
-                qr.Format = BarcodeFormat.QR_CODE;
-                var result = new Bitmap(qr.Write((qrString).Trim()));
-
-                result.Save(@"F:\Qr\"+onlyName+".png", ImageFormat.Png);
-            }
-
-            xlWorkBook.Close();
-            xlApp.Quit();
-
-            Marshal.ReleaseComObject(xlWorkSheet);
-            Marshal.ReleaseComObject(xlWorkBook);
-            Marshal.ReleaseComObject(xlApp);
-
         }
     }
 }
