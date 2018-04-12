@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2010
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QR-Code-Generator", "QR-Code-Generator\QR-Code-Generator.csproj", "{E02971ED-A6F1-4884-B631-53BF72FBD381}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "QR-Code-Generator-SetupProject", "QR-Code-Generator-SetupProject\QR-Code-Generator-SetupProject.vdproj", "{36C1AB51-EBEA-4CF6-89FE-97BF5E72DFAE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,8 @@ Global
 		{E02971ED-A6F1-4884-B631-53BF72FBD381}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E02971ED-A6F1-4884-B631-53BF72FBD381}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E02971ED-A6F1-4884-B631-53BF72FBD381}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36C1AB51-EBEA-4CF6-89FE-97BF5E72DFAE}.Debug|Any CPU.ActiveCfg = Debug
+		{36C1AB51-EBEA-4CF6-89FE-97BF5E72DFAE}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
