@@ -117,6 +117,7 @@ namespace QR_Code_Generator
                 {
                     MessageBox.Show("Please Enter Path To Save QR Codes.");
                     btnBrowser.Focus();
+                    btnExcel.Enabled = true; btnExcel.Text = "Generate";
                     return;
                 }
 
@@ -124,6 +125,8 @@ namespace QR_Code_Generator
                 {
                     MessageBox.Show("Please Select Excel File.");
                     btnExcelBrowse.Focus();
+                    btnExcel.Text = "Generate && Save";
+                    btnExcel.Enabled = true;
                     return;
                 }
 
@@ -135,6 +138,7 @@ namespace QR_Code_Generator
                 Worksheet xlWorkSheet = (Worksheet)xlWorkBook.Worksheets.get_Item(1);
 
                 Range xlRange = xlWorkSheet.UsedRange;
+
                 int totalRows = xlRange.Rows.Count;
 
                 int totalColumns = xlRange.Columns.Count;
